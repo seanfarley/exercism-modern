@@ -87,6 +87,11 @@ Defaults to first entry in $PATH, can be overridden if required."
   :group 'exercism-modern
   :type 'string)
 
+(defcustom exercism-modern-load-hook #'exercism-modern-default-load-hook
+  "Hook run when exercism-modern package has been loaded."
+  :group 'exercism-modern
+  :type 'hook)
+
 (defface exercism-modern-easy-button
   '((((class color) (min-colors 88))
      :background "#EFFFF1" :foreground "#5FB268")
@@ -347,5 +352,6 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
     (tabulated-list-print t)))
 
 (provide 'exercism-modern)
+(run-hooks 'exercism-modern-load-hook)
 
 ;;; exercism-modern.el ends here
