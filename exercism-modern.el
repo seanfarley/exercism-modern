@@ -46,6 +46,10 @@ Need to figure out LIST."
     (when (equal dir workspace)
       (concat workspace "/"))))
 
+(eval-and-compile
+  (defvar projectile-project-root-functions)
+  (autoload 'projectile-project-root-functions "projectile"))
+
 ;;;###autoload
 (defun exercism-modern-default-load-hook ()
   "Default hook to load projectile et al settings."
