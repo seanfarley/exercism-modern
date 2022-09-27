@@ -247,8 +247,8 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                                            (is-unlocked (not (eq :json-false (alist-get 'is_unlocked exercise))))
                                            (is-recommended (not (eq :json-false (alist-get 'is_recommended exercise))))
                                            (text-face (if is-unlocked 'default 'shadow))
-                                           (foreground (face-attribute (intern (format "exercism-%s-button" difficulty)) :foreground))
-                                           (background (face-attribute (intern (format "exercism-%s-button" difficulty)) :background)))
+                                           (foreground (face-attribute (intern (format "exercism-modern-%s-button" difficulty)) :foreground))
+                                           (background (face-attribute (intern (format "exercism-modern-%s-button" difficulty)) :background)))
                                       (list slug
                                             (vector (concat
                                                      (propertize "  " 'face 'warning)
