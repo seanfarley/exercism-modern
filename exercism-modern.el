@@ -33,6 +33,19 @@
 (require 'svg-lib)
 (require 'tablist)
 
+;;;###autoload
+(defun exercism-modern-project-root-function (dir &optional _list)
+  "Identity exercism's workspace as a project.
+
+If DIR is equal to exercism's workspace return t.
+
+Need to figure out LIST."
+  (let* ((workspace (alist-get 'workspace (exercism-modern-get-config)))
+         (workspace (file-truename (directory-file-name (expand-file-name workspace))))
+         (dir (file-truename (directory-file-name (expand-file-name dir)))))
+    (when (equal dir workspace)
+      (concat workspace "/"))))
+
 (defgroup exercism-modern nil
   "Settings related to exercism."
   :group 'external
