@@ -46,6 +46,12 @@ Need to figure out LIST."
     (when (equal dir workspace)
       (concat workspace "/"))))
 
+;;;###autoload
+(defun exercism-modern-default-load-hook ()
+  "Default hook to load projectile et al settings."
+  (when (boundp 'projectile-project-root-functions)
+    (add-to-list 'projectile-project-root-functions #'exercism-modern-project-root-function)))
+
 (defgroup exercism-modern nil
   "Settings related to exercism."
   :group 'external
