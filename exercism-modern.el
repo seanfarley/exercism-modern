@@ -251,7 +251,7 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                                            (background (face-attribute (intern (format "exercism-modern-%s-button" difficulty)) :background)))
                                       (list slug
                                             (vector (concat
-                                                     (propertize "  " 'face 'warning)
+                                                     (propertize "★  " 'face 'warning)
                                                      (propertize
                                                       " "
                                                       'display
@@ -312,7 +312,7 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                                                         :type ,(image-type (alist-get 'icon_url track))
                                                         :file ,icon))
                                                      title)
-                                                    (if is-joined (propertize "" 'face 'success) (propertize "" 'face 'error))
+                                                    (if is-joined (propertize "✓" 'face 'success) (propertize "⊘" 'face 'error))
                                                     (concat
                                                      (number-to-string (if (numberp num-learnt-concepts) num-learnt-concepts 0))
                                                      "/"
