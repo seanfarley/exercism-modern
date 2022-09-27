@@ -176,7 +176,7 @@ METHOD defaults to GET and must be a valid argument to `request'."
    do (async-start-process
        "exercism-modern-download"
        exercism-modern-command
-       (lambda (proc)
+       (lambda (_proc)
          ;; TODO Handle errors
          (message "Exercise cloned"))
        "download"
@@ -203,7 +203,7 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
     (async-start-process
      "exercism-modern-submit"
      exercism-modern-command
-     (lambda (proc)
+     (lambda (_proc)
        ;; TODO Handle submission errors
        (message "Submitted"))
      "submit" (if buffer-prefix-arg (buffer-file-name buffer-prefix-arg)
@@ -228,9 +228,9 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
 
 (define-derived-mode exercism-modern-exercise-mode tablist-mode "exercism-modern-exercise-mode"
   "Major mode for viewing exercism exercises."
-  (let* ((exercises (exercism-modern-get-exercises exercism-modern-current-track)))
-    (setq title-width (+ 6 (cl-loop for exercise in exercises maximize (length (alist-get 'title exercise))))
-          tabulated-list-format (vector
+  (let* ((exercises (exercism-modern-get-exercises exercism-modern-current-track))
+         (title-width (+ 6 (cl-loop for exercise in exercises maximize (length (alist-get 'title exercise))))))
+    (setq tabulated-list-format (vector
                                  (list "Exercise" title-width t)
                                  (list "Difficulty" 12 nil)
                                  (list "Description" 0 nil))
@@ -245,7 +245,6 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                                            (blurb (alist-get 'blurb exercise))
                                            (difficulty (alist-get 'difficulty exercise))
                                            (is-unlocked (not (eq :json-false (alist-get 'is_unlocked exercise))))
-                                           (is-recommended (not (eq :json-false (alist-get 'is_recommended exercise))))
                                            (text-face (if is-unlocked 'default 'shadow))
                                            (foreground (face-attribute (intern (format "exercism-modern-%s-button" difficulty)) :foreground))
                                            (background (face-attribute (intern (format "exercism-modern-%s-button" difficulty)) :background)))
