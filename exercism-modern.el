@@ -132,6 +132,7 @@ Defaults to first entry in $PATH, can be overridden if required."
 (defvar exercism-modern-exercise-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "<return>") #'exercism-modern-download-exercise)
+    (define-key map (kbd "o") #'exercism-modern-open-exercise)
     map)
   "Keymap for `exercism-modern-exercise-mode'.")
 
@@ -216,6 +217,40 @@ METHOD defaults to GET and must be a valid argument to `request'."
   "Open the exercism workspace in Dired."
   (interactive)
   (dired (alist-get 'workspace (exercism-modern-get-config))))
+
+;;;###autoload
+(defun exercism-modern-open-exercise ()
+  "Invoked from `exercism-modern-track-mode', open the selected exercise."
+  (interactive)
+  (when (eq major-mode 'exercism-modern-exercise-mode)
+    (let* ((current-ex (tabulated-list-get-id))
+           (workspace (alist-get 'workspace (exercism-modern-get-config)))
+           (bufname (buffer-name))
+           (track (when (string-match "*exercism-modern-\\([a-zA-Z0-9]+\\)*" bufname)
+                    (match-string 1 bufname))))
+      ;; TODO needs to be downloaded first if doesn't exist
+      ;; TODO remove doom-specific functions
+      ;; TODO check persp if already has two windows split
+      (let* ((ex-dir (concat workspace "/" track "/" current-ex))
+             (ex-config-file (concat ex-dir "/.exercism/config.json"))
+             (ex-config (json-read-file ex-config-file))
+             ;; only gets the first item in the list; what to do with other items?
+             (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0)))
+        (+workspace-switch (file-name-base
+                            (directory-file-name
+                             (file-name-as-directory workspace))) t)
+        (if (> (count-windows) 1)
+            (progn
+              ;; there's already a different window configuration, so just use
+              ;; that
+              (find-file (concat ex-dir "/" ex-soln-file))
+              (other-window 1)
+              (find-file (concat ex-dir "/HELP.md"))
+              (other-window 1))
+          (find-file (concat ex-dir "/" ex-soln-file))
+          (split-window-right)
+          (find-file (concat ex-dir "/HELP.md"))
+          (other-window 1))))))
 
 ;;;###autoload
 (defun exercism-modern-submit (&optional buffer-prefix-arg)
