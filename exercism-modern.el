@@ -229,8 +229,9 @@ METHOD defaults to GET and must be a valid argument to `request'."
            (track (when (string-match "*exercism-modern-\\([a-zA-Z0-9]+\\)*" bufname)
                     (match-string 1 bufname))))
       ;; TODO needs to be downloaded first if doesn't exist
-      ;; TODO remove doom-specific functions
-      ;; TODO check persp if already has two windows split
+      ;; TODO remove doom-specific functions (probably put into a user hook)
+      ;; TODO add readme note about setting user preference of splitting
+      ;; vertically by documenting split-{height,width}-threshold
       (let* ((ex-dir (concat workspace "/" track "/" current-ex))
              (ex-config-file (concat ex-dir "/.exercism/config.json"))
              (ex-config (json-read-file ex-config-file))
@@ -240,17 +241,11 @@ METHOD defaults to GET and must be a valid argument to `request'."
                             (directory-file-name
                              (file-name-as-directory workspace))) t)
         (if (> (count-windows) 1)
-            (progn
-              ;; there's already a different window configuration, so just use
-              ;; that
-              (find-file (concat ex-dir "/" ex-soln-file))
-              (other-window 1)
-              (find-file (concat ex-dir "/HELP.md"))
-              (other-window 1))
-          (find-file (concat ex-dir "/" ex-soln-file))
-          (split-window-right)
-          (find-file (concat ex-dir "/HELP.md"))
-          (other-window 1))))))
+            ;; there's already a different window configuration, so, for
+            ;; simplicity's sake, delete all the current windows
+            (delete-other-windows))
+        (find-file (concat ex-dir "/README.md"))
+        (find-file-other-window (concat ex-dir "/" ex-soln-file))))))
 
 ;;;###autoload
 (defun exercism-modern-submit (&optional buffer-prefix-arg)
