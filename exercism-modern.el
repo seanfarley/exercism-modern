@@ -176,6 +176,11 @@ METHOD defaults to GET and must be a valid argument to `request'."
   "Get all exercises for a LANGUAGE slug."
   (alist-get 'exercises (exercism-modern-request (format "tracks/%s/exercises" language))))
 
+(defun exercism-modern--download-finished (_proc)
+  "Handle potential errors and callbacks after a download has completed."
+  ;; TODO Handle errors
+  (message "Exercise cloned"))
+
 (defun exercism-modern-download-exercise ()
   "Download a given exercise."
   (interactive)
@@ -184,9 +189,7 @@ METHOD defaults to GET and must be a valid argument to `request'."
    do (async-start-process
        "exercism-modern-download"
        exercism-modern-command
-       (lambda (_proc)
-         ;; TODO Handle errors
-         (message "Exercise cloned"))
+       #'exercism-modern--download-finished
        "download"
        (format "--exercise=%s" exercise)
        (format "--track=%s" exercism-modern-current-track))))
