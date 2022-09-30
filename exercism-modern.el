@@ -50,12 +50,6 @@ Need to figure out LIST."
   (defvar projectile-project-root-functions)
   (autoload 'projectile-project-root-functions "projectile"))
 
-;;;###autoload
-(defun exercism-modern-default-load-hook ()
-  "Default hook to load projectile et al settings."
-  (when (boundp 'projectile-project-root-functions)
-    (add-to-list 'projectile-project-root-functions #'exercism-modern-project-root-function)))
-
 (defgroup exercism-modern nil
   "Settings related to exercism."
   :group 'external
@@ -91,8 +85,10 @@ Defaults to first entry in $PATH, can be overridden if required."
   :group 'exercism-modern
   :type 'string)
 
-(defcustom exercism-modern-load-hook #'exercism-modern-default-load-hook
-  "Hook run when exercism-modern package has been loaded."
+(defcustom exercism-modern-exercise-hook nil
+  "Hook run when exercism-modern opens an exercise.
+
+The hook is passed the track and the name of the exercise."
   :group 'exercism-modern
   :type 'hook)
 
@@ -229,7 +225,6 @@ METHOD defaults to GET and must be a valid argument to `request'."
            (track (when (string-match "*exercism-modern-\\([a-zA-Z0-9]+\\)*" bufname)
                     (match-string 1 bufname))))
       ;; TODO needs to be downloaded first if doesn't exist
-      ;; TODO remove doom-specific functions (probably put into a user hook)
       ;; TODO add readme note about setting user preference of splitting
       ;; vertically by documenting split-{height,width}-threshold
       (let* ((ex-dir (concat workspace "/" track "/" current-ex))
@@ -237,9 +232,8 @@ METHOD defaults to GET and must be a valid argument to `request'."
              (ex-config (json-read-file ex-config-file))
              ;; only gets the first item in the list; what to do with other items?
              (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0)))
-        (+workspace-switch (file-name-base
-                            (directory-file-name
-                             (file-name-as-directory workspace))) t)
+        (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
+
         (if (> (count-windows) 1)
             ;; there's already a different window configuration, so, for
             ;; simplicity's sake, delete all the current windows
@@ -402,6 +396,5 @@ into \"python\" as its track."
     (tabulated-list-print t)))
 
 (provide 'exercism-modern)
-(run-hooks 'exercism-modern-load-hook)
 
 ;;; exercism-modern.el ends here
