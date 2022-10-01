@@ -212,23 +212,23 @@ METHOD defaults to GET and must be a valid argument to `request'."
            (workspace (alist-get 'workspace (exercism-modern-get-config)))
            (bufname (buffer-name))
            (track (when (string-match "*exercism-modern-\\([a-zA-Z0-9]+\\)*" bufname)
-                    (match-string 1 bufname))))
+                    (match-string 1 bufname)))
+           (ex-dir (concat workspace "/" track "/" current-ex))
+           (ex-config-file (concat ex-dir "/.exercism/config.json"))
+           (ex-config (json-read-file ex-config-file))
+           ;; only gets the first item in the list; what to do with other items?
+           (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0)))
       ;; TODO needs to be downloaded first if doesn't exist
       ;; TODO add readme note about setting user preference of splitting
       ;; vertically by documenting split-{height,width}-threshold
-      (let* ((ex-dir (concat workspace "/" track "/" current-ex))
-             (ex-config-file (concat ex-dir "/.exercism/config.json"))
-             (ex-config (json-read-file ex-config-file))
-             ;; only gets the first item in the list; what to do with other items?
-             (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0)))
-        (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
+      (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
 
-        (if (> (count-windows) 1)
-            ;; there's already a different window configuration, so, for
-            ;; simplicity's sake, delete all the current windows
-            (delete-other-windows))
-        (find-file (concat ex-dir "/README.md"))
-        (find-file-other-window (concat ex-dir "/" ex-soln-file))))))
+      (if (> (count-windows) 1)
+          ;; there's already a different window configuration, so, for
+          ;; simplicity's sake, delete all the current windows
+          (delete-other-windows))
+      (find-file (concat ex-dir "/README.md"))
+      (find-file-other-window (concat ex-dir "/" ex-soln-file)))))
 
 ;;;###autoload
 (defun exercism-modern-submit (&optional buffer-prefix-arg)
