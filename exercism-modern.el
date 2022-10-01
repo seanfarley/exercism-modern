@@ -204,7 +204,10 @@ METHOD defaults to GET and must be a valid argument to `request'."
 (defun exercism-modern-open-exercise ()
   "Invoked from `exercism-modern-track-mode', open the selected exercise."
   (interactive)
-  (when (eq major-mode 'exercism-modern-exercise-mode)
+  (when (> (length (tablist-get-marked-items)) 1)
+    (message "Can only open one execise at a time."))
+  (when (and (eq major-mode 'exercism-modern-exercise-mode)
+             (eq (length (tablist-get-marked-items)) 1))
     (let* ((current-ex (tabulated-list-get-id))
            (workspace (alist-get 'workspace (exercism-modern-get-config)))
            (bufname (buffer-name))
