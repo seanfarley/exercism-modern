@@ -181,15 +181,19 @@ METHOD defaults to GET and must be a valid argument to `request'."
   ;; TODO Handle errors
   (message "Exercise cloned"))
 
-(defun exercism-modern-download-exercise ()
-  "Download a given exercise."
+(defun exercism-modern-download-exercise (&optional callback)
+  "Download a given exercise.
+
+If CALLBACK is non-nil, then call that function when downloading
+is finished, otherwise call the default
+`exercism-modern--download-finished'."
   (interactive)
   (cl-loop
    for exercise in (mapcar #'car (tablist-get-marked-items))
    do (async-start-process
        "exercism-modern-download"
        exercism-modern-command
-       #'exercism-modern--download-finished
+       (if callback callback #'exercism-modern--download-finished)
        "download"
        (format "--exercise=%s" exercise)
        (format "--track=%s" exercism-modern-current-track))))
@@ -215,20 +219,27 @@ METHOD defaults to GET and must be a valid argument to `request'."
                     (match-string 1 bufname)))
            (ex-dir (concat workspace "/" track "/" current-ex))
            (ex-config-file (concat ex-dir "/.exercism/config.json"))
-           (ex-config (json-read-file ex-config-file))
-           ;; only gets the first item in the list; what to do with other items?
-           (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0)))
-      ;; TODO needs to be downloaded first if doesn't exist
+           (action (lambda (&optional _proc)
+                     ;; TODO handle _proc errors
+                     (message "")       ; clear messages about downloading
+                     (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
+                     (if (> (count-windows) 1)
+                         ;; there's already a different window configuration, so, for
+                         ;; simplicity's sake, delete all the current windows
+                         (delete-other-windows))
+                     ;; only gets the first item in the list; it's unclear as of
+                     ;; yet if this list ever has more than one item
+                     (let* ((ex-config (json-read-file ex-config-file))
+                            (ex-soln-file (elt (alist-get 'solution (alist-get 'files ex-config)) 0))
+                            (ex-soln-file (concat ex-dir "/" ex-soln-file)))
+                       (find-file (concat ex-dir "/README.md"))
+                       (find-file-other-window ex-soln-file)))))
       ;; TODO add readme note about setting user preference of splitting
       ;; vertically by documenting split-{height,width}-threshold
-      (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
-
-      (if (> (count-windows) 1)
-          ;; there's already a different window configuration, so, for
-          ;; simplicity's sake, delete all the current windows
-          (delete-other-windows))
-      (find-file (concat ex-dir "/README.md"))
-      (find-file-other-window (concat ex-dir "/" ex-soln-file)))))
+      (if (file-exists-p ex-config-file)
+          (funcall action)
+        (message "Downloading %s/%s ..." track current-ex)
+        (exercism-modern-download-exercise action)))))
 
 ;;;###autoload
 (defun exercism-modern-submit (&optional buffer-prefix-arg)
