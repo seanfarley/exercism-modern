@@ -177,7 +177,7 @@ METHOD defaults to GET and must be a valid argument to `request'."
   (alist-get 'exercises (exercism-modern-request (format "tracks/%s/exercises" language))))
 
 (defun exercism-modern--download-finished (_process _status _output)
-  "Handle potential errors and callbacks after a download has completed."
+  "Handle callback after a download has successfully completed."
   (message "Exercise(s) cloned"))
 
 (defun exercism-modern-download-exercise (&optional callback)
