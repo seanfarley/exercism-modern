@@ -194,15 +194,16 @@ is finished, otherwise call the default
     (cl-loop
      for exercise in (mapcar #'car (tablist-get-marked-items))
      do (pfuture-callback
-          (list exercism-modern-command
-                "download"
-                (format "--exercise=%s" exercise)
-                (format "--track=%s" exercism-modern-current-track))
+            (list exercism-modern-command
+                  "download"
+                  (format "--exercise=%s" exercise)
+                  (format "--track=%s" exercism-modern-current-track))
           :name (format
                  "exercism-download-%s-%s"
                  exercism-modern-current-track
                  exercise)
-          :on-success cb-fn))))
+          :on-success cb-fn
+          :on-error #'exercism-modern--error-callback))))
 
 ;;;###autoload
 (defun exercism-modern-jump ()
@@ -247,6 +248,20 @@ is finished, otherwise call the default
         (message "Downloading %s/%s ..." track current-ex)
         (exercism-modern-download-exercise action)))))
 
+(defun exercism-modern--error-callback (_process _status output)
+  "Handle errors from asynchronous PROCESS.
+
+STATUS is the pfuture state for the process, such as the exit
+code. OUTPUT is the name of the buffer that contains the process'
+error output."
+  (with-current-buffer output
+    (let* ((err (buffer-substring-no-properties (point-min) (point-max)))
+           (err (save-match-data        ; remove trailing whitespace
+                 (if (string-match "[ \t\n\r]+\\'" err)
+                     (replace-match "" t t err)
+                   err))))
+      (message "%s" err))))
+
 ;;;###autoload
 (defun exercism-modern-submit (&optional buffer-prefix-arg)
   "Submit the current exercise.
@@ -269,7 +284,8 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                 (mapconcat 'identity solutions " ")))
       :name "exercism-modern-submit"
       :directory default-directory
-      :on-success success)))
+      :on-success success
+      :on-error #'exercism-modern--error-callback)))
 
 ;;;###autoload
 (defun exercism-modern-track-view-exercises ()
