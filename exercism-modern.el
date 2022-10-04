@@ -9,7 +9,7 @@
 ;; Modified: September 15, 2022
 ;; Version: 0.0.1
 ;; Homepage: https://github.com/elken/exercism-modern
-;; Package-Requires: ((emacs "27.1") (request "0.2.0") (async "1.9.3") (tablist "1.0") (svg-lib "0.2.5"))
+;; Package-Requires: ((emacs "27.1") (request "0.2.0") (pfuture "1.10") (tablist "1.0") (svg-lib "0.2.5"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -27,7 +27,7 @@
 ;;; Code:
 
 (require 'xdg)
-(require 'async)
+(require 'pfuture)
 (require 'request)
 (require 'image)
 (require 'svg-lib)
@@ -176,7 +176,7 @@ METHOD defaults to GET and must be a valid argument to `request'."
   "Get all exercises for a LANGUAGE slug."
   (alist-get 'exercises (exercism-modern-request (format "tracks/%s/exercises" language))))
 
-(defun exercism-modern--download-finished (_proc)
+(defun exercism-modern--download-finished (_process _status _output)
   "Handle potential errors and callbacks after a download has completed."
   ;; TODO Handle errors
   (message "Exercise cloned"))
@@ -188,15 +188,21 @@ If CALLBACK is non-nil, then call that function when downloading
 is finished, otherwise call the default
 `exercism-modern--download-finished'."
   (interactive)
-  (cl-loop
-   for exercise in (mapcar #'car (tablist-get-marked-items))
-   do (async-start-process
-       "exercism-modern-download"
-       exercism-modern-command
-       (if callback callback #'exercism-modern--download-finished)
-       "download"
-       (format "--exercise=%s" exercise)
-       (format "--track=%s" exercism-modern-current-track))))
+  (let ((cb-fn (if callback
+                   callback
+                 #'exercism-modern--download-finished)))
+    (cl-loop
+     for exercise in (mapcar #'car (tablist-get-marked-items))
+     do (pfuture-callback
+          (list exercism-modern-command
+                "download"
+                (format "--exercise=%s" exercise)
+                (format "--track=%s" exercism-modern-current-track))
+          :name (format
+                 "exercism-download-%s-%s"
+                 exercism-modern-current-track
+                 exercise)
+          :on-success cb-fn))))
 
 ;;;###autoload
 (defun exercism-modern-jump ()
@@ -219,7 +225,7 @@ is finished, otherwise call the default
                     (match-string 1 bufname)))
            (ex-dir (concat workspace "/" track "/" current-ex))
            (ex-config-file (concat ex-dir "/.exercism/config.json"))
-           (action (lambda (&optional _proc)
+           (action (lambda (&optional _process _status _output)
                      ;; TODO handle _proc errors
                      (message "")       ; clear messages about downloading
                      (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
@@ -251,16 +257,19 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
   (let ((solutions (map-nested-elt
                     (exercism-modern-get-config
                      (expand-file-name ".exercism/config.json" (locate-dominating-file "." ".exercism")))
-                    '(files solution))))
-    (async-start-process
-     "exercism-modern-submit"
-     exercism-modern-command
-     (lambda (_proc)
-       ;; TODO Handle submission errors
-       (message "Submitted"))
-     "submit" (if buffer-prefix-arg (buffer-file-name buffer-prefix-arg)
-                (mapconcat 'identity solutions " ")))))
-
+                    '(files solution)))
+        (success (lambda (&optional _process _status _output)
+                   ;; TODO Handle submission errors
+                   (message "Submitted!"))))
+    (pfuture-callback
+        (list exercism-modern-command
+              "submit"
+              (if buffer-prefix-arg
+                  (buffer-file-name buffer-prefix-arg)
+                (mapconcat 'identity solutions " ")))
+      :name "exercism-modern-submit"
+      :directory default-directory
+      :on-success success)))
 
 ;;;###autoload
 (defun exercism-modern-track-view-exercises ()
