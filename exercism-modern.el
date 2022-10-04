@@ -189,9 +189,13 @@ is finished, otherwise call the default
   (interactive)
   (let ((cb-fn (if callback
                    callback
-                 #'exercism-modern--download-finished)))
+                 #'exercism-modern--download-finished))
+        (items (mapcar #'car (tablist-get-marked-items))))
+    (if (eq 1 (length items))
+        (message "Downloading %s/%s..." exercism-modern-current-track (nth 0 items))
+      (message "Downloading %d exercises..." (length items)))
     (cl-loop
-     for exercise in (mapcar #'car (tablist-get-marked-items))
+     for exercise in items
      do (pfuture-callback
             (list exercism-modern-command
                   "download"
