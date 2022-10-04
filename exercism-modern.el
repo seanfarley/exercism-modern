@@ -178,7 +178,6 @@ METHOD defaults to GET and must be a valid argument to `request'."
 
 (defun exercism-modern--download-finished (_process _status _output)
   "Handle potential errors and callbacks after a download has completed."
-  ;; TODO Handle errors
   (message "Exercise cloned"))
 
 (defun exercism-modern-download-exercise (&optional callback)
@@ -227,7 +226,6 @@ is finished, otherwise call the default
            (ex-dir (concat workspace "/" track "/" current-ex))
            (ex-config-file (concat ex-dir "/.exercism/config.json"))
            (action (lambda (&optional _process _status _output)
-                     ;; TODO handle _proc errors
                      (message "")       ; clear messages about downloading
                      (run-hook-with-args 'exercism-modern-exercise-hook workspace track current-ex)
                      (if (> (count-windows) 1)
@@ -272,10 +270,7 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
   (let ((solutions (map-nested-elt
                     (exercism-modern-get-config
                      (expand-file-name ".exercism/config.json" (locate-dominating-file "." ".exercism")))
-                    '(files solution)))
-        (success (lambda (&optional _process _status _output)
-                   ;; TODO Handle submission errors
-                   (message "Submitted!"))))
+                    '(files solution))))
     (pfuture-callback
         (list exercism-modern-command
               "submit"
@@ -284,7 +279,7 @@ Pass prefix BUFFER-PREFIX-ARG to prompt for a buffer instead."
                 (mapconcat 'identity solutions " ")))
       :name "exercism-modern-submit"
       :directory default-directory
-      :on-success success
+      :on-success (message "Submitted!")
       :on-error #'exercism-modern--error-callback)))
 
 ;;;###autoload
