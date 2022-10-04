@@ -63,8 +63,22 @@ Any exercises not yet unlocked are greyed out.
 | =m=   | Mark an exercise to be downloaded |
 | =u=   | Unmark an exercise                |
 | =t=   | Toggle all marks                  |
+| =o=   | Open exercise and README.md |
 
 A more detailed listing of shortcuts available when navigating exercises is available [[https://github.com/politza/tablist][here]].
+
+*** Note about opening an exercise
+
+The window split is done by =find-file-other-window= which is governed by
+=split-height-threshold= and =split-width-threshold=. By default, this will
+split windows horizontally into a top half and bottom half. If you'd prefer a
+vertical split into a left half and a right half, then you can achieve that by
+setting the thresholds to,
+
+#+begin_src emacs-lisp
+(setq split-height-threshold nil
+      split-width-threshold 0)
+#+end_src
 
 ** =exercism-modern-submit=
 Once you're done with an exercise and you're happy the tests pass, invoke this to submit the solution files to exercism.

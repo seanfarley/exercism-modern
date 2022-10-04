@@ -243,8 +243,6 @@ is finished, otherwise call the default
                             (ex-soln-file (concat ex-dir "/" ex-soln-file)))
                        (find-file (concat ex-dir "/README.md"))
                        (find-file-other-window ex-soln-file)))))
-      ;; TODO add readme note about setting user preference of splitting
-      ;; vertically by documenting split-{height,width}-threshold
       (if (file-exists-p ex-config-file)
           (funcall action)
         (message "Downloading %s/%s ..." track current-ex)
