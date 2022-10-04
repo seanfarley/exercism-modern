@@ -178,7 +178,7 @@ METHOD defaults to GET and must be a valid argument to `request'."
 
 (defun exercism-modern--download-finished (_process _status _output)
   "Handle potential errors and callbacks after a download has completed."
-  (message "Exercise cloned"))
+  (message "Exercise(s) cloned"))
 
 (defun exercism-modern-download-exercise (&optional callback)
   "Download a given exercise.
